@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.cbook as cbook
 
+# ________________________________ calculo de variaciones ____________________________
+
 def variaciones():
     df = pd.read_csv('data.csv',header=0,index_col=0, parse_dates=['Fecha'])
     for col in df:
@@ -12,6 +14,8 @@ def variaciones():
     
     df.dropna(inplace=True)
     return df
+
+# _________________________ funciones de visualizacion de datos _____________________
 
 def graficar_rendimiento(var):
     
@@ -23,7 +27,37 @@ def graficar_rendimiento(var):
     plt.legend()
     plt.show()
 
-if __name__ == '__main__':
+# ________________________ Funciones de portafilios ________________________________
+
+def rendimiento_port(vars, wgts):
+    
+    rend=  vars.prod()
+    
+    rend = rend*wgts
+    
+    return rend.sum()
+
+def volatilidad_port(vars, wgts):
+    
+    covs =vars.cov()
+    n = 0
+    port_vol = 0
+
+    
+    for col in covs:
+        indiv = (np.power(covs[col][n], 2) * np.power(wgts[n], 2))
+        port_vol = port_vol + indiv
+        n+=1
+    
+    r = covs.iloc[0][1] * wgts[0] * wgts[1] * 2
+
+    port_vol = port_vol + r
+
+    return np.sqrt(port_vol)
+
+# _______________________ Sin clasificar __________________________________________
+
+def prueba():
     var = variaciones()
     
     rf = [var['RF 0-1'].std(), var['RF 0-1'].prod()]
@@ -48,3 +82,10 @@ if __name__ == '__main__':
     
     
     print(max_rend, port_max_rend)
+
+
+
+if __name__ == '__main__':
+    var = variaciones()
+    var.drop(['RF 1-5', 'RF 5-10'], axis= 1, inplace=True)
+    print(volatilidad_port(var,[0.1, 0.9]))
