@@ -44,8 +44,20 @@ def volatilidad_port(vars, wgts):
 def graficar_portafolios(rends, vols):
 
     plt.plot(vols, rends)
+    plt.xlabel = 'Volatilidad'
+    plt.ylabel = 'Rendimiento'
+    plt.legend()
     plt.show()
 
+def graficar_3_curvas(rends, vols):
+
+    plt.plot(vols[0], rends[0], label='Largo Plazo')
+    plt.plot(vols[1], rends[1], label='Mediano Plazo')
+    plt.plot(vols[2], rends[2], label='Corto Plazo')
+    plt.xlabel = 'Volatilidad'
+    plt.ylabel = 'Rendimiento'
+    plt.legend()
+    plt.show()
 # ____________________________ Simulaciones __________________________________
 
 def simulacion_portafilio_2_activos(nportafolios):
@@ -74,5 +86,43 @@ def simulacion_portafilio_2_activos(nportafolios):
         
     graficar_portafolios(rends, vols)
     
+def simulacion_3_curvas(nportafolios):
+    
+    
+    cols = [[0,1],[1,2],[2,3]]
+    
+
+    wgtsList = []
+    n = 0
+    salto = 1/nportafolios
+    
+    for _ in range(nportafolios):
+       w = [round(1-n,2),round(n,2)]
+       wgtsList.append(w)
+       n+=salto
+    
+    rends = []
+    vols = []
+    for n in cols:
+        
+        var = variaciones()
+        var.drop(var.columns[n],axis=1,inplace=True)
+        
+        curvar = []
+        curvav = []
+
+        for comb in wgtsList:
+            rport = rendimiento_port(var,comb) 
+            vport = volatilidad_port(var, comb)
+
+            curvar.append(rport)
+            curvav.append(vport)
+        
+        rends.append(curvar)
+        vols.append(curvav)
+    
+    
+    graficar_3_curvas(rends, vols)
+    
 if __name__ == '__main__':
-    simulacion_portafilio_2_activos(100)
+    simulacion_3_curvas(100)
