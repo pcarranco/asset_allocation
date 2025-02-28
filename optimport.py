@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
-
+import matplotlib.pyplot as plt
+import matplotlib.ticker as mtick
 
 
 # _______________________ lectura de datos __________________________________
@@ -102,8 +103,8 @@ def generar_curva_portafolio_2_activos(datos):
         rport = np.array(rends) * comb
         vport = np.sqrt(np.dot(comb.T, np.dot(cov, comb)))
 
-        ports_rends.append(rport.sum())
-        ports_vols.append(vport)
+        ports_rends.append(rport.sum() * 100)
+        ports_vols.append(vport * 100)
 
     result = {
         'tipo': 'curva',
@@ -115,3 +116,18 @@ def generar_curva_portafolio_2_activos(datos):
     }
 
     return result
+
+# _________________________ Funciones de visualización de datos _____________________
+
+
+def graficar_curva_2_activos(rends, vols):
+    
+    fig, ax = plt.subplots()
+    ax.plot(vols, rends, color='blue', marker='o')
+    ax.yaxis.set_major_formatter(mtick.PercentFormatter())
+    ax.xaxis.set_major_formatter(mtick.PercentFormatter())
+    ax.set_xlabel('Volatilidad')
+    ax.set_ylabel('Rendimiento')
+    ax.set_title('Curva 2 activos')
+    ax.grid(True)
+    plt.show()
