@@ -67,7 +67,7 @@ def generador_ponderaciones_2_activos():
     return all_weigts
 
 
-def wghts_generator_3_assets():
+def generador_ponderaciones_3_activos():
     wghts_iniciales = np.linspace(0,1,11).reshape(11,1)
     wghts_port = np.flip(wghts_iniciales)
     for i in range(11):
