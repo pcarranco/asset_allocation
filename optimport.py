@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
+import scipy.optimize import minimize
 
 
 # _______________________ lectura de datos __________________________________
@@ -176,6 +177,56 @@ def generar_curva_montecarlo(datos):
     }
 
     return result
+
+def generar_curva_minimizacion(datos):
+
+    rends = datos['data']['rendimiento']
+    cov = datos['data']['volatilidad']
+    activos = datos['data']['activos']
+
+
+
+
+    wgtslist = generador_ponderaciones_aleatorias(nports=5000,nseries=len(activos))
+
+
+    ports_rends = []
+    ports_vols = []
+
+    for comb in wgtslist:
+        rport = np.array(rends) * comb
+        vport = np.sqrt(np.dot(comb.T, np.dot(cov, comb)))
+
+        ports_rends.append(rport.sum() * 100)
+        ports_vols.append(vport * 100)
+
+    result = {
+        'tipo': 'curva',
+        'curva': {
+            'rendimiento': ports_rends,
+            'volatilidad': ports_vols
+        },
+        'ponderaciones': wgtslist,
+        'activos': datos['data']['activos']
+    }
+
+    return result
+
+# _________________________Funciones apoyo mimimizaciòn _____________________________
+
+def obtener_rend_vol_sr(rends, covar_m, pond):
+	  
+    ret_port = np.sum(rends * pond)
+    vol_port = np.sqrt(np.dot(pond.T, np.dot(rends, pond))
+    sr = ret_port/vol_port
+    
+    return np.array([ret_port,vol_port,sr])
+
+def check_sum(pond):
+    return np.sum(pond) - 1
+
+def minimize_volatility(pond):
+    return obtener_rend_vol_sr(rends, covar_m, pond)[1]
 
 # _________________________ Funciones de visualización de datos _____________________
 
