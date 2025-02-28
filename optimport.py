@@ -45,7 +45,7 @@ def volatilidad_port(vars, wgts):
 # ____________________________ Generador de ponderaciones ________________________________
 
 
-def wghts_generator_random(nports, nseries):
+def generador_ponderaciones_aleatorias(nports, nseries):
     all_weights = np.zeros((nports, nseries))
 
     for ind in range(nports):
