@@ -184,16 +184,33 @@ def generar_curva_minimizacion(datos):
     cov = datos['data']['volatilidad']
     activos = datos['data']['activos']
 
+    cons = ({'type':'eq', 'fun':check_sum})
+		
+    bounds = ((0,1))
 
+    for item in activos:
+        bounds = ((0,1),) * (bounds)
 
+    init_gess = []
+    
+    for item in activos:
+        init_gess.append(1/len(activos))
+    
+    max_ret = rends.max()
+    min_ret = rends.min()
 
-    wgtslist = generador_ponderaciones_aleatorias(nports=5000,nseries=len(activos))
+    ports_rends = np.linspace(min_ret,max_ret,30)
 
-
-    ports_rends = []
     ports_vols = []
+    wgtslist = []
 
-    for comb in wgtslist:
+    for posible_rend in ports_rends:
+        
+        cons = ({'type':'eq', 'fun':check_sum},'type';'eq', 'fun':lambda w: obtener_rend_vol_sr(w)[0] - posible_rend})
+		        
+        opt_result = minimize(
+        
+
         rport = np.array(rends) * comb
         vport = np.sqrt(np.dot(comb.T, np.dot(cov, comb)))
 
