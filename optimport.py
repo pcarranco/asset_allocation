@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
-import scipy.optimize import minimize
+from scipy.optimize import minimize
 
 
 # _______________________ lectura de datos __________________________________
@@ -184,13 +184,29 @@ def generar_curva_minimizacion(datos):
     cov = datos['data']['volatilidad']
     activos = datos['data']['activos']
 
+    def check_sum(pond):
+        return np.sum(pond) - 1
+    
+
+    def obtener_rend_vol_sr_inner(pond):
+        ret_port = np.sum(rends * pond)
+        vol_port = np.sqrt(np.dot(pond.T, np.dot(cov, pond)))
+        sr = ret_port/vol_port
+
+        return np.array([ret_port,vol_port,sr])
+
+    def minimizar_volatilidad(pond):
+        return obtener_rend_vol_sr_inner(pond)[1]
+
     cons = ({'type':'eq', 'fun':check_sum})
 		
     bounds = ((0,1))
 
     for item in activos:
-        bounds = ((0,1),) * (bounds)
+        bounds = ((0,1),) + (bounds)
 
+    bounds = bounds[:len(activos)]
+    
     init_gess = []
     
     for item in activos:
@@ -206,21 +222,26 @@ def generar_curva_minimizacion(datos):
 
     for posible_rend in ports_rends:
         
-        cons = ({'type':'eq', 'fun':check_sum},'type';'eq', 'fun':lambda w: obtener_rend_vol_sr(w)[0] - posible_rend})
+        cons = ({'type':'eq', 'fun':check_sum},
+                {'type':'eq', 'fun':lambda w: obtener_rend_vol_sr_inner(w)[0] - posible_rend})
 		        
-        opt_result = minimize(
+        opt_result = minimize(minimizar_volatilidad,
+                              init_gess,
+                              method='SLSQP',
+                              bounds=bounds,
+                              constraints=cons
+                              )
         
-
-        rport = np.array(rends) * comb
+        comb = opt_result.x
         vport = np.sqrt(np.dot(comb.T, np.dot(cov, comb)))
 
-        ports_rends.append(rport.sum() * 100)
+        wgtslist.append(comb)
         ports_vols.append(vport * 100)
 
     result = {
         'tipo': 'curva',
         'curva': {
-            'rendimiento': ports_rends,
+            'rendimiento': ports_rends *100,
             'volatilidad': ports_vols
         },
         'ponderaciones': wgtslist,
@@ -234,16 +255,10 @@ def generar_curva_minimizacion(datos):
 def obtener_rend_vol_sr(rends, covar_m, pond):
 	  
     ret_port = np.sum(rends * pond)
-    vol_port = np.sqrt(np.dot(pond.T, np.dot(rends, pond))
+    vol_port = np.sqrt(np.dot(pond.T, np.dot(rends, pond)))
     sr = ret_port/vol_port
     
     return np.array([ret_port,vol_port,sr])
-
-def check_sum(pond):
-    return np.sum(pond) - 1
-
-def minimize_volatility(pond):
-    return obtener_rend_vol_sr(rends, covar_m, pond)[1]
 
 # _________________________ Funciones de visualización de datos _____________________
 
